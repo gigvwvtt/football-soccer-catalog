@@ -1,4 +1,7 @@
-﻿using System.Diagnostics;
+﻿using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using project.Models;
@@ -14,17 +17,27 @@ namespace project.Controllers
             _logger = logger;
         }
 
-        
-        
-        
         public IActionResult ShowAddForm()
         {
-            return View();
+            return View(GetTeams());
         }
 
-        public void Add()
+        [HttpPost]
+        public string Add(string name, string surname, string sex, int date, string team, string country)
         {
-            
+            var newPlayer = new PlayerViewModel(name, surname, sex, 1010, team, country);
+             mock.Players.Add(newPlayer);
+            //добавление в БД
+            return "Успешно";
+        }
+
+        private IEnumerable<string> GetTeams()
+        {
+            return mock.Players.Select(p => p.Team).ToList();
+        }
+
+        public void Edit()
+        {
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

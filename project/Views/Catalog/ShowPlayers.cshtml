@@ -1,17 +1,15 @@
 ﻿@model IEnumerable<PlayerViewModel>
 @{
-    ViewData["Title"] = "Все футболисты";
+    ViewData["Title"] = "Cписок всех футболистов";
 }
 <h1>@ViewData["Title"]</h1>
 
-<p>Тут список всех футболистов.</p>
-<h2>People</h2>
 <table class="table">
     <tr><td>Имя</td><td>Фамилия</td><td>Пол</td>
-        <td>Дата рождения</td><td>Команда</td><td>Страна</td></tr>
+        <td>Дата рождения</td><td>Команда</td><td>Страна</td><td></td></tr>
     @foreach (var p in Model)
     {
         <tr><td>@p.Name</td><td>@p.Surname</td><td>@p.Sex</td>
-            <td>@p.DateOfBirth</td><td>@p.Team</td><td>@p.Country</td></tr>
+            <td>@p.DateOfBirth</td><td>@p.Team</td><td>@p.Country</td><td><button type="button" class="btn btn-primary">Редактировать</button></td></tr>
     }
 </table>

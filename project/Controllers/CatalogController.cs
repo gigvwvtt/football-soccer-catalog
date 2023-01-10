@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using project.Models;
@@ -14,16 +13,10 @@ namespace project.Controllers
         {
             _logger = logger;
         }
-
-        private List<PlayerViewModel> _players = new List<PlayerViewModel>()
-        {
-            new("John", "So", "male", 22222, "MFClub", "UK"),
-            new("Lucas", "ROmero", "male", 645643, "CClub", "Canada")
-        };
         
         public IActionResult ShowPlayers()
         {
-            return View(_players);
+            return View(mock.Players);
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

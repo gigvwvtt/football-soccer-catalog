@@ -1,0 +1,176 @@
+﻿@model IEnumerable<PlayerModelView>
+@{
+    ViewData["Title"] = "Cписок всех футболистов";
+}
+<h1>@ViewData["Title"]</h1>
+
+<table class="table" id="footballPlayers">
+    <tr>
+        <td>id</td>
+        <td>Имя</td>
+        <td>Фамилия</td>
+        <td>Пол</td>
+        <td>Дата рождения</td>
+        <td>Команда</td>
+        <td>Страна</td>
+        <td>Действие</td>
+    </tr>
+    @foreach (var p in Model)
+    {
+        <tr>
+            <td class="PlayerId">
+                <span>@p.PlayerId</span>
+            </td>
+            <td class="Name">
+                <span>@p.Name</span>
+                <input type="text" value="@p.Name" style="display:none"/>
+            </td>
+            <td class="Surname">
+                <span>@p.Surname</span>
+                <input type="text" value="@p.Surname" style="display:none"/>
+            </td>
+            <td class="Sex">
+                <span>@p.Sex</span>
+                <div class="selector" style="display:none">
+                    <select value="@p.Sex">
+                        <option value="мужской">мужской</option>
+                        <option value="женский">женский</option>
+                    </select>
+                </div>
+            </td>
+            <td class="DateOfBirth">
+                <span>@p.DateOfBirth.Date</span>
+                <input type="date" value="@p.DateOfBirth.Date" style="display:none"/>
+            </td>
+            <td class="Team">
+                <span>@p.Team</span>
+                <input type="text" list="datalistOptions" value="@p.Team" style="display:none">
+                <datalist id="datalistOptions">
+                    @foreach (var country in Model)
+                    {
+                        <option>@country.Team</option>
+                    }
+                </datalist>
+            </td>
+            <td class="Country">
+                <span>@p.Country</span>
+                <div class="selector" style="display:none">
+                    <select value="@p.Country">
+                        <option value="Россия">Россия</option>
+                        <option value="США">США</option>
+                        <option value="Италия">Италия</option>
+                    </select>
+                </div>
+                    
+            </td>
+            <td>
+                <button type="button" class="btn btn-primary Edit" onclick="location.href='javascript:';">Редактировать</button>
+                <button type="button" class="btn btn-warning Update" onclick="location.href='javascript:';" style="display: none">Обновить</button>
+                <button type="button" class="btn btn-danger Cancel" onclick="location.href='javascript:';" style="display: none">Отмена</button>
+            </td>
+        </tr>
+    }
+</table>
+
+@section Scripts
+{
+    <script type="text/javascript">
+          // $(function () {
+          //     //Remove the dummy row if data present.
+          //     if ($("#footballPlayers tr").length > 2) {
+          //         $("#footballPlayers tr:eq(1)").remove();
+          //     } else {
+          //         var row = $("#footballPlayers tr:last-child");
+          //         row.find(".Edit").hide();
+          //         row.find(".Delete").hide();
+          //         row.find("span").html('&nbsp;');
+          //     }
+          // });
+    
+          $("body").on("click", "#footballPlayers .Edit", function EditUpdate(ctl) {
+              var row = $(this).closest("tr");
+              $("td", row).each(function (){
+                  if ($(this).find("input").length > 0) {
+                      $(this).find("input").show();
+                      $(this).find("span").hide();
+                  }
+                  if ($(this).find("select").length > 0) {
+                      $(this).find("select").parent().show();
+                      $(this).find("span").hide();
+                      $(this).find("select").val($(this).find("span").html());
+                  }
+              });
+          row.find(".Update").show();
+          row.find(".Cancel").show();
+          row.find(".Delete").hide();
+          $(this).hide();
+          });          
+    
+        //Update event handler.
+        $("body").on("click", "#footballPlayers .Update", function () {
+            var row = $(this).closest("tr");
+            $("td", row).each(function () {
+                var span = $(this).find("span");
+                var input = $(this).find("input")
+                if ($(this).find("input").length > 0) {
+                    span.html(input.val());
+                    span.show();
+                    input.hide();
+                }
+                var sel = $(this).find(".selector");
+                if (sel.length > 0) {
+                    var selectValue = sel.find("select");
+                    span.html(selectValue.val());
+                    span.show();
+                    sel.hide();
+                }
+            });
+            row.find(".Edit").show();
+            row.find(".Delete").show();
+            row.find(".Cancel").hide();
+            $(this).hide();
+
+            var player = new Object();
+            player.PlayerId = row.find(".PlayerId").find("span").html();
+            player.Name = row.find(".Name").find("span").html();
+            player.Surname = row.find(".Surname").find("span").html();
+            player.Sex = row.find(".Sex").find("span").html();
+            player.DateOfBirth = row.find(".DateOfBirth").find("span").html();
+            player.Team = row.find(".Team").find("span").html();
+            player.Country = row.find(".Country").find("span").html();
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("Update", "Catalog")',
+                data: JSON.stringify(player),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json"
+            });
+        });
+
+        //Cancel event handler.
+        $("body").on("click", "#footballPlayers .Cancel", function () {
+            var row = $(this).closest("tr");
+            $("td", row).each(function () {
+                if ($(this).find("input").length > 0) {
+                    var span = $(this).find("span");
+                    var input = $(this).find("input");
+                    input.val(span.html());
+                    input.hide();
+                    span.show();
+                }
+                if ($(this).find(".selector").length > 0) {
+                    var span = $(this).find("span");
+                    var selectValue = $(this).parent().find("select");
+                    selectValue.val(span.html());
+                    selectValue.parent().hide();
+                    span.show();
+                }
+            });
+            row.find(".Edit").show();
+            row.find(".Delete").show();
+            row.find(".Update").hide();
+            $(this).hide();
+        });
+
+    </script>
+}

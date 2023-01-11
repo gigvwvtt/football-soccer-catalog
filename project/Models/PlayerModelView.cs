@@ -1,15 +1,26 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
+using Microsoft.VisualBasic.CompilerServices;
 
 namespace project.Models
 {
-    public class PlayerViewModel
+    public class PlayerModelView
     {
-        [Display(Name = "Имя")]
         [Required]
+        public int PlayerId { get; set; }
+        
+        [Required]
+        [Display(Name = "Имя")]
+        [DataType(DataType.Text)]
+        [MinLength(3)]
+        [MaxLength(15)]
         public string Name { get; set; }
         
-        [Display(Name = "Фамилия")]
         [Required]
+        [Display(Name = "Фамилия")]
+        [DataType(DataType.Text)]
+        [MinLength(3)]
+        [MaxLength(15)]
         public string Surname { get; set; }
         
         [Display(Name = "Пол")]
@@ -18,7 +29,8 @@ namespace project.Models
         
         [Display(Name = "Дата рождения")]
         [Required]
-        public int DateOfBirth { get; set; }
+        [DataType(DataType.Date)]
+        public DateTime DateOfBirth { get; set; }
         
         [Display(Name = "Название команды")]
         [Required]
@@ -27,15 +39,5 @@ namespace project.Models
         [Display(Name = "Страна")]
         [Required]
         public string Country { get; set; }
-
-        public PlayerViewModel(string name, string surname, string sex, int dateOfBirth, string team, string country)
-        {
-            Name = name;
-            Surname = surname;
-            Sex = sex;
-            DateOfBirth = dateOfBirth;
-            Team = team;
-            Country = country;
-        }
     }
 }

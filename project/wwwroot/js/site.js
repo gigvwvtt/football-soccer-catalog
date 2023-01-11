@@ -6,12 +6,8 @@
                 if ($(this).hasClass("active")) {
                     $(this).removeClass("active");
                 }
-                //if ($(this).hasAttribute("aria-current")) {
-                //    $(this).removeAttr("aria-current");
-                //}
             });
             $(this).addClass('active');
-            // $(this).parent().attr('aria-current', 'page');
         }
     });
 });

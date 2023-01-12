@@ -24,44 +24,37 @@
             </td>
             <td class="Name">
                 <span id="view">@p.Name</span>
-                @Html.TextBox(p.Name, p.Name, new { @class = "form-control", placeholder = "Имя", style="display:none" })
-                @Html.ValidationMessage(p.Name, "", new { @class = "text-danger" })
+                @Html.TextBox(p.Name, p.Name, new { @class = "form-control", placeholder = "Имя", style = "display:none" })
             </td>
             <td class="Surname">
                 <span id="view">@p.Surname</span>
-                @Html.TextBox(p.Surname, p.Surname, new { @class = "form-control", placeholder = "Фамилия", style="display:none" })
-                @Html.ValidationMessage(p.Surname, "", new { @class = "text-danger" })
+                @Html.TextBox(p.Surname, p.Surname, new { @class = "form-control", placeholder = "Фамилия", style = "display:none" })
             </td>
             <td class="Sex">
                 <span id="view">@p.Sex</span>
-                @Html.DropDownList(p.Sex, new SelectList(Enum.GetValues(typeof(Sex))), new { @class = "form-select selector", style="display:none" })
-                @Html.ValidationMessage(p.Sex, "", new { @class = "text-danger" })
+                @Html.DropDownList(p.Sex, new SelectList(Enum.GetValues(typeof(Sex))), new { @class = "form-select selector", style = "display:none" })
             </td>
             <td class="DateOfBirth">
                 <span id="view">@p.DateOfBirth.Value.ToShortDateString()</span>
                 <input class="form-control" type="date" value="@p.DateOfBirth.Value.ToShortDateString()" style="display:none"/>
-                @* @Html.Editor(p.DateOfBirth.Value.ToShortDateString(), new { htmlAttributes =  new {@class = "form-control", style="display:none", type="date"}}) *@
-                @Html.ValidationMessage(p.DateOfBirth.Value.ToShortDateString(), "", new { @class = "text-danger" })
             </td>
             <td class="Team">
                 <span id="view">@p.Team</span>
-                @Html.TextBox(p.Team, p.Team,new { @class = "form-control", placeholder = "Название команды", list = "datalistOptions", style="display:none"})
+                @Html.TextBox(p.Team, p.Team, new { @class = "form-control", placeholder = "Название команды", list = "datalistOptions", style = "display:none" })
                 <datalist id="datalistOptions">
-                    @foreach (var country in Model.ToList().Select(t=>t.Team).Distinct())
+                    @foreach (var country in Model.ToList().Select(t => t.Team).Distinct())
                     {
                         <option>@country</option>
                     }
                 </datalist>
-                @Html.ValidationMessage(p.Team, "", new { @class = "text-danger" })
             </td>
             <td class="Country">
                 <span id="view">@p.Country</span>
-                @Html.DropDownList(p.Country, new SelectList(Enum.GetValues(typeof(Country))), new { @class = "form-select selector", style="display:none" })
-                @Html.ValidationMessage(p.Country, "", new { @class = "text-danger" })
+                @Html.DropDownList(p.Country, new SelectList(Enum.GetValues(typeof(Country))), new { @class = "form-select selector", style = "display:none" })
             </td>
             <td>
                 <button type="button" class="btn btn-primary Edit" onclick="location.href='javascript:';">Редактировать</button>
-                <button type="button" class="btn btn-warning Update" onclick="location.href='javascript:';" style="display: none">Обновить</button>
+                <button type="submit" class="btn btn-warning Update" onclick="location.href='javascript:';" style="display: none">Обновить</button>
                 <button type="button" class="btn btn-danger Cancel" onclick="location.href='javascript:';" style="display: none">Отмена</button>
                 @ViewBag.Result
             </td>
@@ -73,28 +66,29 @@
 {
     @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
     <script type="text/javascript">
-          // $(function () {
-          //     //Remove the dummy row if data present.
-          //     if ($("#footballPlayers tr").length > 2) {
-          //         $("#footballPlayers tr:eq(1)").remove();
-          //     } else {
-          //         var row = $("#footballPlayers tr:last-child");
-          //         row.find(".Edit").hide();
-          //         row.find(".Delete").hide();
-          //         row.find("span").html('&nbsp;');
-          //     }
-          // });
+          var savedData;
+          
+          $("body").on("click", "#footballPlayers .Edit", function SaveUnedited(){
+              savedData = [];
+              var row = $(this).closest("tr");
+              let i = 0;
+              $("td", row).each(function (){
+                  var span = $(this).find("span");
+                  savedData[i] = span.html();
+                  i++;
+              });
+          });
     
           $("body").on("click", "#footballPlayers .Edit", function EditUpdate(ctl) {
               var row = $(this).closest("tr");
               $("td", row).each(function (){
                   if ($(this).find("input").length > 0) {
                       $(this).find("input").show();
-                      $(this).find("span").hide();
+                      $(this).find("span#view").hide();
                   }
                   if ($(this).find("select").length > 0) {
                       $(this).find("select").show();
-                      $(this).find("span").hide();
+                      $(this).find("span#view").hide();
                       $(this).find("select").val($(this).find("span").html());
                   }
               });
@@ -106,11 +100,10 @@
     
         //Update event handler.
         $("body").on("click", "#footballPlayers .Update", function () {
-            
-                var row = $(this).closest("tr");
-                $("td", row).each(function () {
+            var row = $(this).closest("tr");  
+            $("td", row).each(function () {
                 var span = $(this).find("span");
-                var input = $(this).find("input")
+                var input = $(this).find("input")                        
                 if ($(this).find("input").length > 0) {
                     span.html(input.val());
                     span.show();
@@ -118,12 +111,12 @@
                 }
                 var sel = $(this).find(".selector");
                 if (sel.length > 0) {
-                    var selectValue = sel.find("select");
-                    span.html(selectValue.val());
+                    span.html(sel.val());
                     span.show();
                     sel.hide();
                 }
             });
+            
             row.find(".Edit").show();
             row.find(".Delete").show();
             row.find(".Cancel").hide();
@@ -137,23 +130,63 @@
             player.DateOfBirth = row.find(".DateOfBirth").find("span").html();
             player.Team = row.find(".Team").find("span").html();
             player.Country = row.find(".Country").find("span").html();
-            
+
             $.ajax({
                 type: "POST",
                 url: '@Url.Action("Update", "Catalog")',
                 data: JSON.stringify(player),
                 contentType: "application/json; charset=utf-8",
-                dataType: "json"
+                dataType: "json",
+                statusCode : {
+                    400 : function (result){
+                        let i = 0;
+                        $("td", row).each(function () {
+                            var span = $(this).find("span");
+                            span.html(savedData[i]);
+                            if ($(this).find("input").length > 0) {
+                                var input = $(this).find("input");
+                                input.val(span.html());
+                            }
+                            if ($(this).find(".selector").length > 0) {
+                                var selectValue = $(this).parent().find("select");
+                                selectValue.val(span.html());
+                            }
+                            i++;
+                        });
+                        alert(result.responseText);
+                        },
+                    200 : function (result){
+                        alert(result.responseText);
+                    }
+                    },
+                // success: function (){                    
+                //     $("td", row).each(function () {
+                //         var span = $(this).find("span");
+                //         var input = $(this).find("input")                        
+                //         if ($(this).find("input").length > 0) {
+                //             span.html(input.val());
+                //             span.show();
+                //             input.hide();
+                //         }
+                //         var sel = $(this).find(".selector");
+                //         if (sel.length > 0) {
+                //             var selectValue = sel.find("select");
+                //             span.html(selectValue.val());
+                //             span.show();
+                //             sel.hide();
+                //         }
+                //     });
+                //     alert("успешно обновлено");
+                // },                
             });
-            
-        });
+        });        
 
         //Cancel event handler.
         $("body").on("click", "#footballPlayers .Cancel", function () {
             var row = $(this).closest("tr");
             $("td", row).each(function () {
                 if ($(this).find("input").length > 0) {
-                    var span = $(this).find("span#view");
+                    var span = $(this).find("span");
                     var input = $(this).find("input");
                     input.val(span.html());
                     input.hide();

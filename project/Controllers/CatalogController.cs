@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net;
 using Microsoft.AspNetCore.Mvc;
 using project.Models;
 using project.Models.Interfaces;
@@ -30,8 +31,16 @@ namespace project.Controllers
         [HttpPost]
         public ActionResult Update([FromBody] PlayerModelView player)
         {
-            _playersRepository.UpdatePlayer(player);
-            return new EmptyResult();
+            if (ModelState.IsValid)
+            {
+                _playersRepository.UpdatePlayer(player);
+
+                return StatusCode((int)HttpStatusCode.OK, "Успешно обновлено");
+            }
+            else
+            {
+                return StatusCode((int)HttpStatusCode.BadRequest, "Неправильные данные!");
+            }
         }
 
         private IEnumerable<PlayerModelView> GetPlayersFromDb()

@@ -1,20 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using project.Models;
+using project.Models.Interfaces;
 
 namespace project.Controllers
 {
     public class AddNewPlayerController : Controller
     {
-        private readonly ILogger<CatalogController> _logger;
+        private readonly IPlayersRepository _playersRepository;
 
-        public AddNewPlayerController(ILogger<CatalogController> logger)
+        public AddNewPlayerController(IPlayersRepository playersRepository)
         {
-            _logger = logger;
+            _playersRepository = playersRepository;
         }
 
         public IActionResult Index()
@@ -24,30 +23,25 @@ namespace project.Controllers
         }
 
         [HttpPost]
-        public string Add(int id, string name, string surname, string sex, DateTime date, string team, string country)
+        public IActionResult Index(PlayerModelView player)
         {
             if (ModelState.IsValid)
             {
+                _playersRepository.AddPlayer(player);
                 
+                ViewBag.Result = "Успешно добавлено!";
             }
-            var newPlayer = new PlayerModelView
+            else
             {
-                Name = name,
-                Surname = surname,
-                Sex = sex,
-                DateOfBirth = date,
-                Team = team, 
-                Country = country
-            };
-
-            moq.Players.Add(newPlayer);
-            //добавление в БД
-            return "Успешно";
+                ViewBag.Result = "Данные не прошли валидацию!";
+            }
+            ViewBag.Teams = GetTeams();
+            return View();
         }
 
-        private IEnumerable<string> GetTeams()
+        private List<string> GetTeams()
         {
-            return moq.Players.Select(p => p.Team).ToList();
+            return _playersRepository.GetAllPlayers().Select(p => p.Team).Distinct().ToList();
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

@@ -1,43 +1,44 @@
-﻿using System.Diagnostics;
+﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
-using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using project.Models;
+using project.Models.Interfaces;
 
 namespace project.Controllers
 {
     public class CatalogController : Controller
     {
-        private readonly ILogger<CatalogController> _logger;
+        private readonly IPlayersRepository _playersRepository;
 
-        public CatalogController(ILogger<CatalogController> logger)
+        public CatalogController(IPlayersRepository playersRepository)
         {
-            _logger = logger;
+            _playersRepository = playersRepository;
         }
+
+        private testData populate = new();
         
+
         public IActionResult Index()
         {
-            return View(moq.Players);
+            //test
+            //populate.PopulateData(_playersRepository);
+            
+            return View(GetPlayersFromDb());
         }
         
         [HttpPost]
         public ActionResult Update([FromBody] PlayerModelView player)
         {
-            var playerToEdit = moq.Players.FirstOrDefault(p => p.PlayerId == player.PlayerId);
-            if (playerToEdit != null)
-            {
-                playerToEdit.Name = player.Name;
-                playerToEdit.Name = player.Surname;
-                playerToEdit.Sex = player.Sex;
-                playerToEdit.DateOfBirth = player.DateOfBirth.Date;
-                playerToEdit.Team = player.Team;
-                playerToEdit.Country = player.Country;
-            }
-
+            _playersRepository.UpdatePlayer(player);
             return new EmptyResult();
         }
 
+        private IEnumerable<PlayerModelView> GetPlayersFromDb()
+        {
+            return _playersRepository.GetAllPlayers().OrderBy(p=>p.PlayerId);
+        }
+        
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {

@@ -1,4 +1,5 @@
-﻿@model IEnumerable<PlayerModelView>
+﻿@using Microsoft.AspNetCore.Mvc.TagHelpers
+@model IEnumerable<PlayerModelView>
 @{
     ViewData["Title"] = "Cписок всех футболистов";
 }
@@ -17,56 +18,52 @@
     </tr>
     @foreach (var p in Model)
     {
-        <tr>
+        <tr class="align-middle">
             <td class="PlayerId">
                 <span>@p.PlayerId</span>
             </td>
             <td class="Name">
-                <span>@p.Name</span>
-                <input type="text" value="@p.Name" style="display:none"/>
+                <span id="view">@p.Name</span>
+                @Html.TextBox(p.Name, p.Name, new { @class = "form-control", placeholder = "Имя", style="display:none" })
+                @Html.ValidationMessage(p.Name, "", new { @class = "text-danger" })
             </td>
             <td class="Surname">
-                <span>@p.Surname</span>
-                <input type="text" value="@p.Surname" style="display:none"/>
+                <span id="view">@p.Surname</span>
+                @Html.TextBox(p.Surname, p.Surname, new { @class = "form-control", placeholder = "Фамилия", style="display:none" })
+                @Html.ValidationMessage(p.Surname, "", new { @class = "text-danger" })
             </td>
             <td class="Sex">
-                <span>@p.Sex</span>
-                <div class="selector" style="display:none">
-                    <select value="@p.Sex">
-                        <option value="мужской">мужской</option>
-                        <option value="женский">женский</option>
-                    </select>
-                </div>
+                <span id="view">@p.Sex</span>
+                @Html.DropDownList(p.Sex, new SelectList(Enum.GetValues(typeof(Sex))), new { @class = "form-select selector", style="display:none" })
+                @Html.ValidationMessage(p.Sex, "", new { @class = "text-danger" })
             </td>
             <td class="DateOfBirth">
-                <span>@p.DateOfBirth.Date</span>
-                <input type="date" value="@p.DateOfBirth.Date" style="display:none"/>
+                <span id="view">@p.DateOfBirth.Value.ToShortDateString()</span>
+                <input class="form-control" type="date" value="@p.DateOfBirth.Value.ToShortDateString()" style="display:none"/>
+                @* @Html.Editor(p.DateOfBirth.Value.ToShortDateString(), new { htmlAttributes =  new {@class = "form-control", style="display:none", type="date"}}) *@
+                @Html.ValidationMessage(p.DateOfBirth.Value.ToShortDateString(), "", new { @class = "text-danger" })
             </td>
             <td class="Team">
-                <span>@p.Team</span>
-                <input type="text" list="datalistOptions" value="@p.Team" style="display:none">
+                <span id="view">@p.Team</span>
+                @Html.TextBox(p.Team, p.Team,new { @class = "form-control", placeholder = "Название команды", list = "datalistOptions", style="display:none"})
                 <datalist id="datalistOptions">
-                    @foreach (var country in Model)
+                    @foreach (var country in Model.ToList().Select(t=>t.Team).Distinct())
                     {
-                        <option>@country.Team</option>
+                        <option>@country</option>
                     }
                 </datalist>
+                @Html.ValidationMessage(p.Team, "", new { @class = "text-danger" })
             </td>
             <td class="Country">
-                <span>@p.Country</span>
-                <div class="selector" style="display:none">
-                    <select value="@p.Country">
-                        <option value="Россия">Россия</option>
-                        <option value="США">США</option>
-                        <option value="Италия">Италия</option>
-                    </select>
-                </div>
-                    
+                <span id="view">@p.Country</span>
+                @Html.DropDownList(p.Country, new SelectList(Enum.GetValues(typeof(Country))), new { @class = "form-select selector", style="display:none" })
+                @Html.ValidationMessage(p.Country, "", new { @class = "text-danger" })
             </td>
             <td>
                 <button type="button" class="btn btn-primary Edit" onclick="location.href='javascript:';">Редактировать</button>
                 <button type="button" class="btn btn-warning Update" onclick="location.href='javascript:';" style="display: none">Обновить</button>
                 <button type="button" class="btn btn-danger Cancel" onclick="location.href='javascript:';" style="display: none">Отмена</button>
+                @ViewBag.Result
             </td>
         </tr>
     }
@@ -74,6 +71,7 @@
 
 @section Scripts
 {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
     <script type="text/javascript">
           // $(function () {
           //     //Remove the dummy row if data present.
@@ -95,7 +93,7 @@
                       $(this).find("span").hide();
                   }
                   if ($(this).find("select").length > 0) {
-                      $(this).find("select").parent().show();
+                      $(this).find("select").show();
                       $(this).find("span").hide();
                       $(this).find("select").val($(this).find("span").html());
                   }
@@ -108,8 +106,9 @@
     
         //Update event handler.
         $("body").on("click", "#footballPlayers .Update", function () {
-            var row = $(this).closest("tr");
-            $("td", row).each(function () {
+            
+                var row = $(this).closest("tr");
+                $("td", row).each(function () {
                 var span = $(this).find("span");
                 var input = $(this).find("input")
                 if ($(this).find("input").length > 0) {
@@ -138,6 +137,7 @@
             player.DateOfBirth = row.find(".DateOfBirth").find("span").html();
             player.Team = row.find(".Team").find("span").html();
             player.Country = row.find(".Country").find("span").html();
+            
             $.ajax({
                 type: "POST",
                 url: '@Url.Action("Update", "Catalog")',
@@ -145,6 +145,7 @@
                 contentType: "application/json; charset=utf-8",
                 dataType: "json"
             });
+            
         });
 
         //Cancel event handler.
@@ -152,7 +153,7 @@
             var row = $(this).closest("tr");
             $("td", row).each(function () {
                 if ($(this).find("input").length > 0) {
-                    var span = $(this).find("span");
+                    var span = $(this).find("span#view");
                     var input = $(this).find("input");
                     input.val(span.html());
                     input.hide();
@@ -162,7 +163,7 @@
                     var span = $(this).find("span");
                     var selectValue = $(this).parent().find("select");
                     selectValue.val(span.html());
-                    selectValue.parent().hide();
+                    selectValue.hide();
                     span.show();
                 }
             });

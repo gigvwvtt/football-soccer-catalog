@@ -4,7 +4,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace project.Migrations
 {
-    public partial class initialDB : Migration
+    public partial class initDB : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -16,10 +16,10 @@ namespace project.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Name = table.Column<string>(type: "character varying(15)", maxLength: 15, nullable: false),
                     Surname = table.Column<string>(type: "character varying(15)", maxLength: 15, nullable: false),
-                    Sex = table.Column<string>(type: "text", nullable: false),
+                    Sex = table.Column<string>(type: "character varying(1)", maxLength: 1, nullable: false),
                     DateOfBirth = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
-                    Team = table.Column<string>(type: "text", nullable: false),
-                    Country = table.Column<string>(type: "text", nullable: false)
+                    Team = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: false),
+                    Country = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false)
                 },
                 constraints: table =>
                 {

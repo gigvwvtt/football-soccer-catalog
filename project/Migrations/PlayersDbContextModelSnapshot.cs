@@ -28,9 +28,11 @@ namespace project.Migrations
 
                     b.Property<string>("Country")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
 
-                    b.Property<DateTime>("DateOfBirth")
+                    b.Property<DateTime?>("DateOfBirth")
+                        .IsRequired()
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("Name")
@@ -40,7 +42,8 @@ namespace project.Migrations
 
                     b.Property<string>("Sex")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(1)
+                        .HasColumnType("character varying(1)");
 
                     b.Property<string>("Surname")
                         .IsRequired()
@@ -49,7 +52,8 @@ namespace project.Migrations
 
                     b.Property<string>("Team")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
 
                     b.HasKey("PlayerId");
 

@@ -1,57 +1,122 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Net;
+﻿using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using project.Data.Interfaces;
 using project.Models;
-using project.Models.Interfaces;
+using project.ViewModels;
 
 namespace project.Controllers
 {
     public class CatalogController : Controller
     {
-        private readonly IPlayersRepository _playersRepository;
+        private readonly ICatalogRepository _catalogRepository;
 
-        public CatalogController(IPlayersRepository playersRepository)
+        public CatalogController(ICatalogRepository catalogRepository)
         {
-            _playersRepository = playersRepository;
+            _catalogRepository = catalogRepository;
         }
 
-        private testData populate = new();
-        
-
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            //test
-            //populate.PopulateData(_playersRepository);
-            
-            return View(GetPlayersFromDb());
+            var players = await _catalogRepository.GetAllPlayers();
+
+            var orderedById = players.Select(editPlayerVM => new CreateOrEditPlayerViewModel
+                {
+                    Id = editPlayerVM.Id,
+                    Country = editPlayerVM.Country,
+                    DateOfBirth = editPlayerVM.DateOfBirth,
+                    Name = editPlayerVM.Name,
+                    Sex = editPlayerVM.Sex,
+                    Surname = editPlayerVM.Surname,
+                    Team = editPlayerVM.Team,
+                    TeamId = editPlayerVM.TeamId
+                })
+                .ToList().OrderBy(p => p.Id);
+
+            return View(orderedById);
         }
         
+        [HttpGet]
+        public async Task<IActionResult> CreateOrEdit(int id = 0)
+        {
+            //var currentId = HttpContext.User.
+            var availableTeams = _catalogRepository.GetAllTeams().Result.Select(t => t.Name).ToList();
+            var createOrEditPlayerViewModel = new CreateOrEditPlayerViewModel { AvailableTeams = availableTeams };
+
+            if (id != 0)
+            {
+                var foundPlayer = await _catalogRepository.GetPlayerByIdAsync(id);
+                if (foundPlayer == null) return View("Error");
+                createOrEditPlayerViewModel.Id = foundPlayer.Id;
+                createOrEditPlayerViewModel.Name = foundPlayer.Name;
+                createOrEditPlayerViewModel.Surname = foundPlayer.Surname;
+                createOrEditPlayerViewModel.Sex = foundPlayer.Sex;
+                createOrEditPlayerViewModel.DateOfBirth = foundPlayer.DateOfBirth;
+                createOrEditPlayerViewModel.TeamId = foundPlayer.TeamId;
+                createOrEditPlayerViewModel.Team = foundPlayer.Team;
+                createOrEditPlayerViewModel.Country = foundPlayer.Country;
+            }
+
+            return View(createOrEditPlayerViewModel);
+        }
+
         [HttpPost]
-        public ActionResult Update([FromBody] PlayerModelView player)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateOrEdit(CreateOrEditPlayerViewModel createOrEditPlayerVM)
         {
             if (ModelState.IsValid)
             {
-                _playersRepository.UpdatePlayer(player);
-
-                return StatusCode((int)HttpStatusCode.OK, "Успешно обновлено");
+                //editing existing player
+                if (createOrEditPlayerVM.Id != 0)
+                {
+                    var foundPlayer = await _catalogRepository.GetPlayerByIdAsync(createOrEditPlayerVM.Id);
+                    if (foundPlayer == null) return View("Error");
+                    
+                    foundPlayer.Name = createOrEditPlayerVM.Name;
+                    foundPlayer.Surname = createOrEditPlayerVM.Surname;
+                    foundPlayer.Sex = createOrEditPlayerVM.Sex;
+                    foundPlayer.DateOfBirth = createOrEditPlayerVM.DateOfBirth;
+                    foundPlayer.TeamId = _catalogRepository.GetAllTeams().Result.FirstOrDefault(t=>t.Name == createOrEditPlayerVM.Team?.Name)?.Id;
+                    foundPlayer.Country = createOrEditPlayerVM.Country;
+                    
+                    _catalogRepository.Update(foundPlayer);
+                    return RedirectToAction("Index");
+                }
+                //creating new player
+                else
+                {
+                    var player = new Player
+                    {
+                        Name = createOrEditPlayerVM.Name,
+                        Surname = createOrEditPlayerVM.Surname,
+                        DateOfBirth = createOrEditPlayerVM.DateOfBirth,
+                        Country = createOrEditPlayerVM.Country,
+                        TeamId = _catalogRepository.GetAllTeams().Result.FirstOrDefault(x=>x.Name == createOrEditPlayerVM.Team?.Name)?.Id,
+                        Sex = createOrEditPlayerVM.Sex
+                    };
+                    _catalogRepository.Add(player);
+                    return RedirectToAction("Index");
+                }
             }
             else
             {
-                return StatusCode((int)HttpStatusCode.BadRequest, "Неправильные данные!");
+                ModelState.AddModelError("", "CreateOrEdit player error");
+                return View(createOrEditPlayerVM);
             }
         }
 
-        private IEnumerable<PlayerModelView> GetPlayersFromDb()
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(int id)
         {
-            return _playersRepository.GetAllPlayers().OrderBy(p=>p.PlayerId);
-        }
-        
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
-        {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            var player = await _catalogRepository.GetPlayerByIdAsync(id);
+            if (player == null)
+            {
+                return View("Error");
+            }
+
+            _catalogRepository.Delete(player);
+            return RedirectToAction("Index");
         }
     }
 }

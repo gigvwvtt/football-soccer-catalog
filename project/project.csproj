@@ -17,4 +17,8 @@
       <Folder Include="Migrations" />
     </ItemGroup>
 
+    <ItemGroup>
+      <_ContentIncludedByDefault Remove="Views\AddNewPlayer\Index.cshtml" />
+    </ItemGroup>
+
 </Project>

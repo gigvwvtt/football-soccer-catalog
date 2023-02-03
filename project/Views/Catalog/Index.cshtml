@@ -1,210 +1,59 @@
-﻿@using Microsoft.AspNetCore.Mvc.TagHelpers
-@model IEnumerable<PlayerModelView>
+﻿@using Microsoft.AspNetCore.Mvc.Rendering
+@using project.ViewModels
+@model IEnumerable<CreateOrEditPlayerViewModel>
 @{
     ViewData["Title"] = "Cписок всех футболистов";
 }
 <h1>@ViewData["Title"]</h1>
 
-<table class="table" id="footballPlayers">
+<table class="table table-bordered text-center table-hover table-striped" id="footballPlayers">
+    <thead class="table-light">
     <tr>
-        <td>id</td>
-        <td>Имя</td>
-        <td>Фамилия</td>
-        <td>Пол</td>
-        <td>Дата рождения</td>
-        <td>Команда</td>
-        <td>Страна</td>
-        <td>Действие</td>
+        <th scope="col" hidden="hidden" style="display: none">id</th>
+        <th scope="col">Имя</th>
+        <th scope="col">Фамилия</th>
+        <th scope="col">Пол</th>
+        <th scope="col">Дата рождения</th>
+        <th scope="col">Команда</th>
+        <th scope="col">Страна</th>
+        <th scope="col" style="width: 20%">Действие</th>
     </tr>
+    </thead>
+    <tbody>
     @foreach (var p in Model)
     {
-        <tr class="align-middle">
-            <td class="PlayerId">
-                <span>@p.PlayerId</span>
+        <tr class="text-center align-middle">
+            <td style="display:none">
+                @Html.DisplayFor(m => p.Id)
             </td>
-            <td class="Name">
-                <span id="view">@p.Name</span>
-                @Html.TextBox(p.Name, p.Name, new { @class = "form-control", placeholder = "Имя", style = "display:none" })
+            <td >
+                @Html.DisplayFor(m => p.Name)
             </td>
-            <td class="Surname">
-                <span id="view">@p.Surname</span>
-                @Html.TextBox(p.Surname, p.Surname, new { @class = "form-control", placeholder = "Фамилия", style = "display:none" })
+            <td >
+                @Html.DisplayFor(m => p.Surname)
             </td>
-            <td class="Sex">
-                <span id="view">@p.Sex</span>
-                @Html.DropDownList(p.Sex, new SelectList(Enum.GetValues(typeof(Sex))), new { @class = "form-select selector", style = "display:none" })
+            <td >
+                @Html.DisplayFor(m => p.Sex)
             </td>
-            <td class="DateOfBirth">
-                <span id="view">@p.DateOfBirth.Value.ToShortDateString()</span>
-                <input class="form-control" type="date" value="@p.DateOfBirth.Value.ToShortDateString()" style="display:none"/>
+            <td >
+                @Html.DisplayFor(m => p.DateOfBirth)
             </td>
-            <td class="Team">
-                <span id="view">@p.Team</span>
-                @Html.TextBox(p.Team, p.Team, new { @class = "form-control", placeholder = "Название команды", list = "datalistOptions", style = "display:none" })
-                <datalist id="datalistOptions">
-                    @foreach (var country in Model.ToList().Select(t => t.Team).Distinct())
-                    {
-                        <option>@country</option>
-                    }
-                </datalist>
+            <td >
+                @Html.DisplayFor(m => p.Team.Name)
             </td>
-            <td class="Country">
-                <span id="view">@p.Country</span>
-                @Html.DropDownList(p.Country, new SelectList(Enum.GetValues(typeof(Country))), new { @class = "form-select selector", style = "display:none" })
+            <td >
+                @Html.DisplayFor(m => p.Country)
             </td>
             <td>
-                <button type="button" class="btn btn-primary Edit" onclick="location.href='javascript:';">Редактировать</button>
-                <button type="submit" class="btn btn-warning Update" onclick="location.href='javascript:';" style="display: none">Обновить</button>
-                <button type="button" class="btn btn-danger Cancel" onclick="location.href='javascript:';" style="display: none">Отмена</button>
-                @ViewBag.Result
+                @Html.ActionLink("Редактировать", "CreateOrEdit", "Catalog", new { p.Id }, new { @class = "btn btn-warning btn-sm", type = "button" })
+                @Html.ActionLink("Удалить", "Delete", "Catalog", p.Id, new { @class = "btn btn-outline-danger btn-sm" })
             </td>
         </tr>
     }
+    </tbody>
 </table>
 
 @section Scripts
 {
     @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
-    <script type="text/javascript">
-          var savedData;
-          
-          $("body").on("click", "#footballPlayers .Edit", function SaveUnedited(){
-              savedData = [];
-              var row = $(this).closest("tr");
-              let i = 0;
-              $("td", row).each(function (){
-                  var span = $(this).find("span");
-                  savedData[i] = span.html();
-                  i++;
-              });
-          });
-    
-          $("body").on("click", "#footballPlayers .Edit", function EditUpdate(ctl) {
-              var row = $(this).closest("tr");
-              $("td", row).each(function (){
-                  if ($(this).find("input").length > 0) {
-                      $(this).find("input").show();
-                      $(this).find("span#view").hide();
-                  }
-                  if ($(this).find("select").length > 0) {
-                      $(this).find("select").show();
-                      $(this).find("span#view").hide();
-                      $(this).find("select").val($(this).find("span").html());
-                  }
-              });
-          row.find(".Update").show();
-          row.find(".Cancel").show();
-          row.find(".Delete").hide();
-          $(this).hide();
-          });          
-    
-        //Update event handler.
-        $("body").on("click", "#footballPlayers .Update", function () {
-            var row = $(this).closest("tr");  
-            $("td", row).each(function () {
-                var span = $(this).find("span");
-                var input = $(this).find("input")                        
-                if ($(this).find("input").length > 0) {
-                    span.html(input.val());
-                    span.show();
-                    input.hide();
-                }
-                var sel = $(this).find(".selector");
-                if (sel.length > 0) {
-                    span.html(sel.val());
-                    span.show();
-                    sel.hide();
-                }
-            });
-            
-            row.find(".Edit").show();
-            row.find(".Delete").show();
-            row.find(".Cancel").hide();
-            $(this).hide();
-
-            var player = new Object();
-            player.PlayerId = row.find(".PlayerId").find("span").html();
-            player.Name = row.find(".Name").find("span").html();
-            player.Surname = row.find(".Surname").find("span").html();
-            player.Sex = row.find(".Sex").find("span").html();
-            player.DateOfBirth = row.find(".DateOfBirth").find("span").html();
-            player.Team = row.find(".Team").find("span").html();
-            player.Country = row.find(".Country").find("span").html();
-
-            $.ajax({
-                type: "POST",
-                url: '@Url.Action("Update", "Catalog")',
-                data: JSON.stringify(player),
-                contentType: "application/json; charset=utf-8",
-                dataType: "json",
-                statusCode : {
-                    400 : function (result){
-                        let i = 0;
-                        $("td", row).each(function () {
-                            var span = $(this).find("span");
-                            span.html(savedData[i]);
-                            if ($(this).find("input").length > 0) {
-                                var input = $(this).find("input");
-                                input.val(span.html());
-                            }
-                            if ($(this).find(".selector").length > 0) {
-                                var selectValue = $(this).parent().find("select");
-                                selectValue.val(span.html());
-                            }
-                            i++;
-                        });
-                        alert(result.responseText);
-                        },
-                    200 : function (result){
-                        alert(result.responseText);
-                    }
-                    },
-                // success: function (){                    
-                //     $("td", row).each(function () {
-                //         var span = $(this).find("span");
-                //         var input = $(this).find("input")                        
-                //         if ($(this).find("input").length > 0) {
-                //             span.html(input.val());
-                //             span.show();
-                //             input.hide();
-                //         }
-                //         var sel = $(this).find(".selector");
-                //         if (sel.length > 0) {
-                //             var selectValue = sel.find("select");
-                //             span.html(selectValue.val());
-                //             span.show();
-                //             sel.hide();
-                //         }
-                //     });
-                //     alert("успешно обновлено");
-                // },                
-            });
-        });        
-
-        //Cancel event handler.
-        $("body").on("click", "#footballPlayers .Cancel", function () {
-            var row = $(this).closest("tr");
-            $("td", row).each(function () {
-                if ($(this).find("input").length > 0) {
-                    var span = $(this).find("span");
-                    var input = $(this).find("input");
-                    input.val(span.html());
-                    input.hide();
-                    span.show();
-                }
-                if ($(this).find(".selector").length > 0) {
-                    var span = $(this).find("span");
-                    var selectValue = $(this).parent().find("select");
-                    selectValue.val(span.html());
-                    selectValue.hide();
-                    span.show();
-                }
-            });
-            row.find(".Edit").show();
-            row.find(".Delete").show();
-            row.find(".Update").hide();
-            $(this).hide();
-        });
-
-    </script>
 }

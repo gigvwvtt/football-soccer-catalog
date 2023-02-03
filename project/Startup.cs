@@ -4,9 +4,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using project.Data;
+using project.Data.Interfaces;
 using project.Models;
-using project.Models.DB;
-using project.Models.Interfaces;
+using project.Repository;
 
 namespace project
 {
@@ -23,9 +24,11 @@ namespace project
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllersWithViews();
-            services.AddScoped<IPlayersRepository, PlayersRepository>();
-            services.AddDbContext<PlayersDbContext>(options => options
-                .UseNpgsql(Configuration.GetConnectionString("AppDB")));
+            services.AddScoped<ICatalogRepository, CatalogRepository>();
+            services.AddDbContext<PlayersDbContext>(options =>
+            {
+                options.UseNpgsql(Configuration.GetConnectionString("AppDB"));
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -40,7 +43,6 @@ namespace project
                 app.UseExceptionHandler("/Catalog/Error");
                 app.UseHsts();
             }
-
             app.UseHttpsRedirection();
             app.UseStaticFiles();
 
@@ -54,6 +56,8 @@ namespace project
                     name: "default",
                     pattern: "{controller=Catalog}/{action=Index}/{id?}");
             });
+            
+            Seed.PopulateData(app);
         }
     }
 }

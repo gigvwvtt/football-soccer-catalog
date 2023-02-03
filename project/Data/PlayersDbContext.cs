@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using project.Models;
 
-namespace project.Models.DB
+namespace project.Data
 {
     public class PlayersDbContext : DbContext
     {
@@ -8,7 +9,7 @@ namespace project.Models.DB
         {
         }
         
-        public DbSet<PlayerModelView> Players { get; set; }
-
+        public DbSet<Player> Players { get; set; }
+        public DbSet<Team> Teams { get; set; }
     }
 }

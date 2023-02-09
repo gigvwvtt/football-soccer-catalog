@@ -5,13 +5,13 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using project.Models.DB;
+using project.Data;
 
 namespace project.Migrations
 {
     [DbContext(typeof(PlayersDbContext))]
-    [Migration("20230113085033_initDB")]
-    partial class initDB
+    [Migration("20230207072122_fix3")]
+    partial class fix3
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -21,17 +21,15 @@ namespace project.Migrations
                 .HasAnnotation("ProductVersion", "5.0.17")
                 .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
-            modelBuilder.Entity("project.Models.PlayerModelView", b =>
+            modelBuilder.Entity("project.Models.Player", b =>
                 {
                     b.Property<int>("PlayerId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
                         .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
-                    b.Property<string>("Country")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
+                    b.Property<int>("Country")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime?>("DateOfBirth")
                         .IsRequired()
@@ -39,27 +37,47 @@ namespace project.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(15)
-                        .HasColumnType("character varying(15)");
+                        .HasColumnType("text");
 
-                    b.Property<string>("Sex")
-                        .IsRequired()
-                        .HasMaxLength(1)
-                        .HasColumnType("character varying(1)");
+                    b.Property<int>("Sex")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Surname")
                         .IsRequired()
-                        .HasMaxLength(15)
-                        .HasColumnType("character varying(15)");
+                        .HasColumnType("text");
 
-                    b.Property<string>("Team")
-                        .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("character varying(10)");
+                    b.Property<int?>("TeamId")
+                        .HasColumnType("integer");
 
                     b.HasKey("PlayerId");
 
+                    b.HasIndex("TeamId");
+
                     b.ToTable("Players");
+                });
+
+            modelBuilder.Entity("project.Models.Team", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+
+                    b.Property<string>("Name")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Teams");
+                });
+
+            modelBuilder.Entity("project.Models.Player", b =>
+                {
+                    b.HasOne("project.Models.Team", "Team")
+                        .WithMany()
+                        .HasForeignKey("TeamId");
+
+                    b.Navigation("Team");
                 });
 #pragma warning restore 612, 618
         }

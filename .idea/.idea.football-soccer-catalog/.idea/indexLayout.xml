@@ -3,6 +3,8 @@
   <component name="UserContentModel">
     <attachedFolders />
     <explicitIncludes />
-    <explicitExcludes />
+    <explicitExcludes>
+      <Path>project/Migrations/Migrations.zip</Path>
+    </explicitExcludes>
   </component>
 </project>
